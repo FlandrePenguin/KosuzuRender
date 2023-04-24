@@ -371,6 +371,26 @@ Transform rotateZ(float theta) {
     return Transform(m, m_inv);
 }
 
+Transform rotate(float theta, const Vector3f& axis) {
+    Matrix4x4 m;
+    Vector3f a = normalize(axis);
+    float sin_theta = std::sin(degreeToRadian(theta));
+    float cos_theta = std::cos(degreeToRadian(theta));
+    m.m[0][0] = a.x * a.x + (1 - a.x * a.x) * cos_theta;
+    m.m[0][1] = a.x * a.y * (1 - cos_theta) - a.z * sin_theta;
+    m.m[0][2] = a.x * a.z * (1 - cos_theta) + a.y * sin_theta;
+    m.m[0][3] = 0.f;
+    m.m[1][0] = a.x * a.y * (1 - cos_theta) + a.z * sin_theta;
+    m.m[1][1] = a.y * a.y + (1 - a.y * a.y) * cos_theta;
+    m.m[1][2] = a.y * a.z * (1 - cos_theta) - a.x * sin_theta;
+    m.m[1][3] = 0.f;
+    m.m[2][0] = a.x * a.z * (1 - cos_theta) - a.y * sin_theta;
+    m.m[2][1] = a.y * a.z * (1 - cos_theta) + a.x * sin_theta;
+    m.m[2][2] = a.z * a.z + (1 - a.z * a.z) * cos_theta;
+    m.m[2][3] = 0.f;
+    return Transform(m, transpose(m));
+}
+
 Transform translate(const Vector3f& d) {
     Matrix4x4 m(1.f, 0.f, 0.f, d.x,
                 0.f, 1.f, 0.f, d.y,
@@ -385,8 +405,8 @@ Transform translate(const Vector3f& d) {
 
 Transform lookAt(const Point3f& pos, const Point3f& look, const Vector3f& up) {
     Matrix4x4 camer_to_world;
-    Vector3f z = normailize(look - pos);
-    Vector3f x = cross(normailize(up), z);
+    Vector3f z = normalize(look - pos);
+    Vector3f x = cross(normalize(up), z);
     Vector3f y = cross(z, x);
     camer_to_world.m[0][0] = x.x;
     camer_to_world.m[1][0] = x.y;
