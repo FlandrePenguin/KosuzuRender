@@ -331,7 +331,7 @@ float Vector3<T>::length() const {
 }
 
 template <typename T>
-inline Vector3<T> normailize(const Vector3<T>& v) {
+inline Vector3<T> normalize(const Vector3<T>& v) {
     return v / v.length();
 }
 
