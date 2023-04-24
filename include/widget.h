@@ -31,6 +31,8 @@ public slots:
 protected:
     void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
     void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
 
 private:
     void initWindow();
@@ -51,6 +53,7 @@ private:
     Transform transformation, model_transformation, view_transformation, projection_transformation;
     Point3f camera_pos, camera_look;
     Vector3f camera_up;
+    Point3f begin_pos, end_pos;
     float fov = 30;
     int width = 800;
     int height = 800;

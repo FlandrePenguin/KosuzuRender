@@ -37,6 +37,28 @@ void RenderWidget::wheelEvent(QWheelEvent* event) {
     update();
 }
 
+void RenderWidget::mousePressEvent(QMouseEvent* event) {
+    if (event->button() == Qt::LeftButton) {
+        begin_pos = end_pos = Point3f(event->x(), event->y(), 0.f);
+    }
+}
+
+void RenderWidget::mouseMoveEvent(QMouseEvent* event) {
+    if (event->buttons() & Qt::LeftButton) {
+        end_pos = Point3f(event->x(), event->y(), 0.f);
+        Vector3f screen_tangent_vector = end_pos - begin_pos;
+        Vector3f world_tangent_vector = inverse(viewPort(width, height) * projection_transformation *
+                                                view_transformation)(screen_tangent_vector);
+        float world_tangent_vector_length = world_tangent_vector.length();
+        Vector3f world_normal_vector = cross(world_tangent_vector, camera_look - camera_pos);
+        model_transformation = rotate(-2000 * world_tangent_vector_length, world_normal_vector) *
+                               model_transformation;
+        begin_pos = end_pos;
+        mvp();
+        update();
+    }
+}
+
 void RenderWidget::initWindow() {
     this->setWindowTitle("Kosuzu Render");
     this->setFixedSize(width, height);
@@ -47,9 +69,9 @@ void RenderWidget::initRender() {
     model = new Model("../obj/Ganyu.obj");
     canvas = QImage(width, height, QImage::Format::Format_RGB888);
     z_buffer = new float[width * height];
-    model_transformation = translate(Point3f(0, 0, -50) - model->getCenter());
-    camera_pos = Point3f(0, 0, 0);
-    camera_look = Point3f(0, 0, -1);
+    model_transformation = translate(Point3f(0, 0, 0) - model->getCenter());
+    camera_pos = Point3f(0, 0, 50);
+    camera_look = Point3f(0, 0, 0);
     camera_up = Vector3f(0, 1, 0);
     view_transformation = lookAt(camera_pos, camera_look, camera_up);
     projection_transformation = perspective(fov, (float)width / (float)height, 0.1f, 1e3);
@@ -72,7 +94,7 @@ int RenderWidget::fps() {
 
 void RenderWidget::mvp() {
     transformation = viewPort(width, height) * projection_transformation *
-                     view_transformation * model_transformation;
+                     view_transformation;
 }
 
 void RenderWidget::render() {
@@ -85,13 +107,13 @@ void RenderWidget::render() {
         for (int j = 0; j < 3; ++j) {
             Point3f v = model->getVertex(face[j]);
             // screen_coords[j] = Point3f(int((v.x + 10.) * width / 20.), int((v.y + 0.5) * height / 20.), v.z);
-            Point3f tv = transformation(v);
-            screen_coords[j] = Point3f(int(tv.x + .5), int(tv.y + .5), tv.z);
-            world_coords[j] = v;
+            world_coords[j] = model_transformation(v);
+            Point3f tv = transformation(world_coords[j]);
+            screen_coords[j] = Point3f(int(tv.x + .5f), int(tv.y + .5f), tv.z);
         }
         Vector3f n = cross(world_coords[2] - world_coords[0], world_coords[1] - world_coords[0]);
-        n = normailize(n);
-        float intensity = dot(n, Vector3f(0., 0., -1.));
+        n = normalize(n);
+        float intensity = dot(n, normalize(camera_look - camera_pos));
         if (intensity > 0)
             drawTriangle(screen_coords[0], screen_coords[1], screen_coords[2], QColor(intensity * 255, intensity * 255, intensity * 255));
     }
