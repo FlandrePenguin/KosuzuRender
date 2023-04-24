@@ -107,6 +107,7 @@ Transform scale(float sx, float sy, float sz);
 Transform rotateX(float theta);
 Transform rotateY(float theta);
 Transform rotateZ(float theta);
+Transform rotate(float theta, const Vector3f& axis);
 Transform translate(const Vector3f& d);
 Transform lookAt(const Point3f& pos, const Point3f& look, const Vector3f& up);
 Transform perspective(float fov, float aspect, float near, float far);
