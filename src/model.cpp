@@ -22,12 +22,12 @@ Model::Model(const std::string& filename)
         if (property == "vt") {
             float x, y, z;
             ss >> x >> y >> z;
-            vertex_normals.push_back(Vector3f(x, y, z));
+            vertex_tangents.push_back(Vector3f(x, y, z));
         }
         if (property == "vn") {
             float x, y, z;
             ss >> x >> y >> z;
-            vertex_tangents.push_back(Vector3f(x, y, z));
+            vertex_normals.push_back(Vector3f(x, y, z));
         }
         if (property == "f") {
             auto [first, second, third] = spilt(ss, 0);
