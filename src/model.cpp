@@ -19,9 +19,19 @@ Model::Model(const std::string& filename)
             ss >> x >> y >> z;
             vertices.push_back(Point3f(x, y, z));
         }
+        if (property == "vt") {
+            float x, y, z;
+            ss >> x >> y >> z;
+            vertex_normals.push_back(Vector3f(x, y, z));
+        }
+        if (property == "vn") {
+            float x, y, z;
+            ss >> x >> y >> z;
+            vertex_tangents.push_back(Vector3f(x, y, z));
+        }
         if (property == "f") {
             auto [first, second, third] = spilt(ss, 0);
-            faces.push_back(std::vector<int>{first, second, third});
+            faces.push_back(Face{first, second, third});
         }
     }
     obj.close();
@@ -35,8 +45,8 @@ size_t Model::numOfFaces() {
 
 Point3f Model::getCenter() {
     for (int i = 0; i < numOfFaces(); ++i) {
-        std::vector<int> face = getFace(i);
-        Point3f baycentric = (getVertex(face[0]) + getVertex(face[1]) + getVertex(face[2])) / 3;
+        Face face = getFace(i);
+        Point3f baycentric = (getVertex(face.vertex[0]) + getVertex(face.vertex[1]) + getVertex(face.vertex[2])) / 3;
         bbox_min.x = std::min(bbox_min.x, baycentric.x);
         bbox_min.y = std::min(bbox_min.y, baycentric.y);
         bbox_min.z = std::min(bbox_min.z, baycentric.z);
@@ -47,7 +57,7 @@ Point3f Model::getCenter() {
     return Point3f((bbox_min.x + bbox_max.x) / 2, (bbox_min.y + bbox_max.y) / 2, (bbox_min.z + bbox_max.z) / 2);
 }
 
-std::vector<int> Model::getFace(int index) {
+Face Model::getFace(int index) {
     return faces[index];
 }
 
@@ -55,18 +65,30 @@ Point3f Model::getVertex(int index) {
     return vertices[index - 1];
 }
 
-std::tuple<int, int, int> Model::spilt(std::stringstream& ss, int index) {
-    std::vector<std::string> vec;
+Vector3f Model::getVertexTangent(int index) {
+    return vertex_tangents[index - 1];
+}
+
+Vector3f Model::getVertexNormal(int index) {
+    return vertex_normals[index - 1];
+}
+
+std::tuple<std::array<int, 3>, std::array<int, 3>, std::array<int, 3>> Model::spilt(std::stringstream& ss, int index) {
+    std::vector<std::string> str_vec;
     std::string str;
+    std::array<int, 3> vertex, vertex_tangent, vertex_normal;
     while (ss >> str)
-        vec.push_back(str);
-    std::vector<std::vector<int>> index_vec(3);
+        str_vec.push_back(str);
     for (int i = 0; i < 3; ++i) {
-        std::stringstream ss2(vec[i]);
+        std::stringstream ss2(str_vec[i]);
         std::string token;
+        std::vector<int> face_property;
         while (std::getline(ss2, token, '/')) {
-            index_vec[i].push_back(std::stoi(token.c_str()));
+            face_property.push_back(std::stoi(token.c_str()));
         }
+        vertex[i] = face_property[0];
+        vertex_tangent[i] = face_property[1];
+        vertex_normal[i] = face_property[2];
     }
-    return {index_vec[0][index], index_vec[1][index], index_vec[2][index]};
+    return {vertex, vertex_tangent, vertex_normal};
 }

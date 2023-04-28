@@ -101,11 +101,11 @@ void RenderWidget::render() {
     ui->FPSLabel->setText(QStringLiteral("FPS : ") + QString::number(fps(), 'i', 0));
     std::fill_n(z_buffer, width * height, -1.f);
     for (int i = 0; i < model->numOfFaces(); ++i) {
-        std::vector<int> face = model->getFace(i);
+        Face face = model->getFace(i);
         Point3f screen_coords[3];
         Point3f world_coords[3];
         for (int j = 0; j < 3; ++j) {
-            Point3f v = model->getVertex(face[j]);
+            Point3f v = model->getVertex(face.vertex[j]);
             // screen_coords[j] = Point3f(int((v.x + 10.) * width / 20.), int((v.y + 0.5) * height / 20.), v.z);
             world_coords[j] = model_transformation(v);
             Point3f tv = transformation(world_coords[j]);
